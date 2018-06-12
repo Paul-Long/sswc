@@ -59,3 +59,10 @@ typings/
 
 # next.js build output
 .next
+.idea/inspectionProfiles/
+.idea/modules.xml
+.idea/sswc.iml
+.idea/workspace.xml
+package-lock.json
+.idea/misc.xml
+dist/

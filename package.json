@@ -1,0 +1,39 @@
+{
+  "name": "sswc",
+  "version": "1.0.1",
+  "description": "socket.io-client shared worker",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "scripts": {
+    "build": "babel index.js worker.js -d dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paul-Long/sswc.git"
+  },
+  "keywords": [
+    "socket.io-client",
+    "shared",
+    "worker"
+  ],
+  "author": "Paul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Paul-Long/sswc/issues"
+  },
+  "homepage": "https://github.com/Paul-Long/sswc#readme",
+  "dependencies": {
+    "sharedworker-loader": "^2.1.1",
+    "socket.io-client": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
