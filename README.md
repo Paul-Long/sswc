@@ -11,3 +11,4 @@ npm install --save
 - emit(topic, message): 发送一个message事件
 - on(topic, callback): 注册一个事件处理器
 - close: 手动关闭
+- join(channel): 加入room
