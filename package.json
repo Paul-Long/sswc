@@ -1,14 +1,16 @@
 {
   "name": "sswc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "socket.io-client shared worker",
   "main": "dist/index.js",
   "files": [
     "dist",
-    "index.js"
+    "index.js",
+    "worker.js",
+    "variable.js"
   ],
   "scripts": {
-    "build": "babel index.js worker.js -d dist"
+    "build": "babel ./*.js -d dist"
   },
   "repository": {
     "type": "git",

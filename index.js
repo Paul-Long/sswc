@@ -1,4 +1,5 @@
 import Worker from 'sharedworker-loader!./worker.js';
+import { TOPIC } from './variable';
 
 type OptParams = {
   heatTimer: number,
@@ -30,21 +31,20 @@ class SharedWorker {
 
   onMessage(event) {
     const {
-      action,
+      type: topic,
+      content,
     } = event.data || {};
-    if (action === 'connect') {
+    if (topic === TOPIC.CONNECT) {
       this.onConnected(event);
     } else {
-      const handler = this._topics.get(action);
-      if (handler) {
-        handler(event.data);
-      }
+      const handler = this._topics.get(topic);
+      handler && handler(content);
     }
   }
 
   onConnected(event) {
-    if (this._topics.has('connect')) {
-      const handler = this._topics.get('connect');
+    if (this._topics.has(TOPIC.CONNECT)) {
+      const handler = this._topics.get(TOPIC.CONNECT);
       if (typeof handler === 'function') {
         handler();
       }
@@ -57,34 +57,34 @@ class SharedWorker {
 
   keep() {
     this._port.postMessage({
-      action: 'heat',
+      type: TOPIC.HEAT,
     });
   }
 
   connect() {
     this._port.postMessage({
-      action: 'connect',
+      type: TOPIC.CONNECT,
       timer: this._timer + 1000,
     });
   }
 
-  emit(topic, message) {
+  emit(topic, content) {
     this._port.postMessage({
-      action: 'emit',
+      type: TOPIC.EMIT,
       topic,
-      message,
+      content,
     });
   }
 
   subscribe(topic) {
     this._port.postMessage({
-      action: 'subscribe',
+      type: TOPIC.SUBSCRIBE,
       topic,
     });
   }
 
   on(topic, callback) {
-    if (topic === 'connect') {
+    if (topic === TOPIC.CONNECT) {
       this.connect();
     } else {
       this.subscribe(topic);
@@ -96,14 +96,14 @@ class SharedWorker {
 
   join(channel) {
     this._port.postMessage({
-      action: 'join',
+      type: TOPIC.JOIN,
       channel,
     });
   }
 
   close() {
     this._port.postMessage({
-      action: 'close',
+      type: TOPIC.CLOSE,
     });
   }
 }

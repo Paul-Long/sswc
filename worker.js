@@ -1,4 +1,5 @@
 import io from 'socket.io-client';
+import { TOPIC } from './variable';
 
 class Worker {
   _clients = new Set();
@@ -16,16 +17,18 @@ class Worker {
       this._socket = io('', {
         transports: ['polling', 'websocket']
       });
-      this._socket.on('connect', () => {
+      this._socket.on(TOPIC.CONNECT, () => {
         this._connected = true;
         this._clients.forEach(c => c.connected());
       });
-      this._socket.on('disconnect', () => {
+      this._socket.on(TOPIC.DISCONNECT, () => {
         this._connected = false;
         this._clients.forEach(c => c.disconnect());
-        this._clients.clear();
       });
-      this._socket.on('reconnecting', (number) => {
+      this._socket.on(TOPIC.RECONNECT, (number) => {
+        this._clients.forEach(c => c.reconnect(number));
+      });
+      this._socket.on(TOPIC.RECONNECTING, (number) => {
         this._clients.forEach(c => c.reconnecting(number));
       });
     }
@@ -98,27 +101,27 @@ class Client {
   }
 
   onMessage(event) {
-    const { action, timer, channel } = event.data;
-    switch (action) {
-      case 'connect':
+    const { type, timer, channel } = event.data;
+    switch (type) {
+      case TOPIC.CONNECT:
         this._num = worker.add();
         this._time = timer;
         break;
-      case 'subscribe':
+      case TOPIC.SUBSCRIBE:
         this.subscribe(event);
         break;
-      case 'emit':
+      case TOPIC.EMIT:
         this.emit(event);
         break;
-      case 'heat':
+      case TOPIC.HEAT:
         this.heat();
         break;
-      case 'close':
+      case TOPIC.CLOSE:
         worker.close(this);
         break;
-      case 'join':
+      case TOPIC.JOIN:
         this._channels.add(channel);
-        worker.emit('join', channel);
+        worker.emit(TOPIC.JOIN, channel);
         break;
     }
   }
@@ -130,8 +133,8 @@ class Client {
     if (!this._topics.has(topic)) {
       this._topics.set(topic, (message) => {
         this._client.postMessage({
-          action: topic,
-          message,
+          type: topic,
+          content: message,
         });
       });
       worker.on(topic);
@@ -139,8 +142,8 @@ class Client {
   };
 
   emit = (event) => {
-    const { topic, message } = event.data || {};
-    worker.emit(topic, message);
+    const { topic, content } = event.data || {};
+    worker.emit(topic, content);
   };
 
   heat = () => {
@@ -162,21 +165,28 @@ class Client {
   connected() {
     this._connected = true;
     this._client.postMessage({
-      action: 'connect'
+      type: TOPIC.CONNECT,
     });
   }
 
   disconnect() {
     this._connected = false;
     this._client.postMessage({
-      action: 'disconnect'
+      type: TOPIC.DISCONNECT,
+    });
+  }
+
+  reconnect(number) {
+    this._client.postMessage({
+      type: TOPIC.RECONNECT,
+      content: number,
     });
   }
 
   reconnecting(number) {
     this._client.postMessage({
-      action: 'reconnecting',
-      number,
+      type: TOPIC.RECONNECTING,
+      content: number,
     });
   }
 
