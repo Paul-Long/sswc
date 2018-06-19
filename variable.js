@@ -7,5 +7,6 @@ export const TOPIC = {
   EMIT: 'emit',
   SUBSCRIBE: 'subscribe',
   JOIN: 'join',
+  LEAVE: 'leave',
   CLOSE: 'close',
 };

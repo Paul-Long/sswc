@@ -1,6 +1,6 @@
 {
   "name": "sswc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "socket.io-client shared worker",
   "main": "dist/index.js",
   "files": [

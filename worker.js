@@ -77,10 +77,6 @@ class Worker {
 
 const worker = new Worker();
 
-type ClientOpt = {
-  client: any,
-}
-
 class Client {
   _timer;
   _client;
@@ -90,7 +86,7 @@ class Client {
   _channels = new Set();
   _connected = false;
 
-  constructor(option: ClientOpt) {
+  constructor(option) {
     this._client = option.client;
     ::this.init();
   }
@@ -121,8 +117,19 @@ class Client {
         break;
       case TOPIC.JOIN:
         this._channels.add(channel);
+        const topic = `${channel}_message`;
+        this._topics.set(topic, (message) => {
+          this._client.postMessage({
+            type: topic,
+            content: message,
+          });
+        });
+        worker.on(topic);
         worker.emit(TOPIC.JOIN, channel);
         break;
+      case TOPIC.LEAVE:
+        this._channels.delete(channel);
+        worker.emit(TOPIC.LEAVE, channel);
     }
   }
 
@@ -151,6 +158,9 @@ class Client {
     this._timer = setTimeout(() => {
       this.clearTimer();
       this._client.close();
+      this._channels.forEach(channel => {
+        worker.emit(TOPIC.LEAVE, channel);
+      });
       worker.disconnect(this);
     }, this._time);
   };
@@ -167,6 +177,12 @@ class Client {
     this._client.postMessage({
       type: TOPIC.CONNECT,
     });
+    for (const channel of this._channels.values()) {
+      worker.emit(TOPIC.JOIN, channel);
+    }
+    for (const topic of this._topics.keys()) {
+      worker.on(topic);
+    }
   }
 
   disconnect() {

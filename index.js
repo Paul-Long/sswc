@@ -1,10 +1,6 @@
 import Worker from 'sharedworker-loader!./worker.js';
 import { TOPIC } from './variable';
 
-type OptParams = {
-  heatTimer: number,
-};
-
 class SharedWorker {
   _worker = null;
   _port = null;
@@ -12,7 +8,7 @@ class SharedWorker {
   _topics = new Map();
   _timer = 3 * 1000;
 
-  constructor(option: OptParams) {
+  constructor(option) {
     const { heatTimer } = option;
     if (heatTimer) {
       this._timer = heatTimer;
@@ -97,6 +93,13 @@ class SharedWorker {
   join(channel) {
     this._port.postMessage({
       type: TOPIC.JOIN,
+      channel,
+    });
+  }
+
+  leave(channel) {
+    this._port.postMessage({
+      type: TOPIC.LEAVE,
       channel,
     });
   }
