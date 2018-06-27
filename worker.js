@@ -155,19 +155,23 @@ class Client {
 
   heat = () => {
     this.clearTimer();
-    this._timer = setTimeout(() => {
-      this.clearTimer();
-      this._client.close();
-      this._channels.forEach(channel => {
-        worker.emit(TOPIC.LEAVE, channel);
-      });
-      worker.disconnect(this);
+    let count = 0;
+    this._timer = setInterval(() => {
+      if (count > 3 && this._timer) {
+        this.clearTimer();
+        this._client.close();
+        this._channels.forEach(channel => {
+          worker.emit(TOPIC.LEAVE, channel);
+        });
+        worker.disconnect(this);
+      }
+      count += 1;
     }, this._time);
   };
 
   clearTimer() {
     if (this._timer) {
-      clearTimeout(this._timer);
+      clearInterval(this._timer);
       this._timer = null;
     }
   }
