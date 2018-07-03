@@ -7,6 +7,7 @@ class Worker {
   _num = 1;
   _regTopics = new Set();
   _connected = false;
+  _rooms = new Map();
 
   connect(client) {
     this._clients.add(client);
@@ -73,6 +74,18 @@ class Worker {
     }
     this._clients.delete(client);
   }
+
+  join(channel) {
+    const count = this._rooms.get(channel) || 0;
+    this._rooms.set(channel, count + 1);
+  }
+  leave(channel) {
+    const count = this._rooms.get(channel) || 0;
+    this._rooms.set(channel, count - 1);
+    if (count - 1 <= 0) {
+      this.emit(TOPIC.LEAVE, channel);
+    }
+  }
 }
 
 const worker = new Worker();
@@ -126,10 +139,12 @@ class Client {
         });
         worker.on(topic);
         worker.emit(TOPIC.JOIN, channel);
+        worker.join(channel);
         break;
       case TOPIC.LEAVE:
         this._channels.delete(channel);
-        worker.emit(TOPIC.LEAVE, channel);
+        worker.leave(channel);
+        break;
     }
   }
 
@@ -161,7 +176,7 @@ class Client {
         this.clearTimer();
         this._client.close();
         this._channels.forEach(channel => {
-          worker.emit(TOPIC.LEAVE, channel);
+          worker.leave(channel)
         });
         worker.disconnect(this);
       }
