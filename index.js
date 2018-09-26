@@ -1,4 +1,4 @@
-import Worker from 'sharedworker-loader!./worker.js';
+import Worker from './worker.js';
 import { TOPIC } from './variable';
 
 class SharedWorker {
